@@ -40,4 +40,32 @@ describe('UI のDOM結線', () => {
     expect(document.getElementById('newgame')).toBeTruthy();
     expect(document.getElementById('undo')).toBeTruthy();
   });
+
+  it('棋譜・形勢グラフ・検討の各部品が揃っている', () => {
+    for (const id of ['evalgraph', 'kifu', 'ply-count', 'redo', 'hint', 'share', 'copy-kifu', 'to-live']) {
+      expect(document.getElementById(id), id).toBeTruthy();
+    }
+    // 着手前の棋譜は空状態を出す
+    expect(document.querySelector('#kifu .kifu-empty')).toBeTruthy();
+  });
+
+  it('盤はキーボードで操作できるようフォーカス可能', () => {
+    expect(document.getElementById('board')?.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('ヒントを押すと最善手の枠が盤に出る', () => {
+    (document.getElementById('hint') as HTMLButtonElement).click();
+    expect(document.querySelector('#board .best-ring')).toBeTruthy();
+    expect(document.getElementById('eval-val')?.textContent).not.toBe('--');
+  });
+
+  it('読み筋表示の切り替えで盤の予想手順が出入りする', () => {
+    const cb = document.getElementById('show-read') as HTMLInputElement;
+    cb.checked = true;
+    cb.dispatchEvent(new Event('change'));
+    expect(document.querySelectorAll('#board .pv-ghost').length).toBeGreaterThan(0);
+    cb.checked = false;
+    cb.dispatchEvent(new Event('change'));
+    expect(document.querySelectorAll('#board .pv-ghost').length).toBe(0);
+  });
 });
