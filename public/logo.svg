@@ -1,13 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="ishi-logo-title">
   <title id="ishi-logo-title">ishigaeshi - 黒石と白石が返るリバーシのロゴ</title>
-  <rect x="7" y="7" width="50" height="50" rx="10" fill="none" stroke="currentColor" stroke-width="3" />
+  <rect x="7" y="7" width="50" height="50" rx="11" fill="none" stroke="currentColor" stroke-width="2.4" />
   <circle cx="24" cy="24" r="9" fill="currentColor" />
-  <circle cx="40" cy="40" r="9" fill="none" stroke="currentColor" stroke-width="3" />
+  <circle cx="40" cy="40" r="9" fill="none" stroke="currentColor" stroke-width="2.4" />
   <path
-    d="M33 24h8M37 20v8"
+    d="M30 34 L34 30 M34 34 L30 30"
     fill="none"
-    stroke="var(--logo-accent, #11865c)"
-    stroke-width="3"
+    stroke="currentColor"
+    stroke-width="2.4"
     stroke-linecap="round"
+    opacity="0.55"
   />
 </svg>

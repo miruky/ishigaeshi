@@ -86,8 +86,16 @@ function search(
   return { score: best, pv: bestPv };
 }
 
-/** playerにとっての最善手・評価値・読み筋を返す。 */
+/** この数以下の空きマスになったら、固定深さに関わらず最後まで読み切る。 */
+const ENDGAME_EXACT = 10;
+
+/**
+ * playerにとっての最善手・評価値・読み筋を返す。
+ * 終盤(空きが ENDGAME_EXACT 以下)では深さを空きマス数まで伸ばし、勝敗を読み切る。
+ */
 export function analyze(board: Board, player: Player, depth: number): Analysis {
-  const r = search(board, player, depth, -Infinity, Infinity);
+  const empties = countEmpty(board);
+  const effective = empties <= ENDGAME_EXACT ? Math.max(depth, empties) : depth;
+  const r = search(board, player, effective, -Infinity, Infinity);
   return { move: r.pv[0] ?? null, score: r.score, pv: r.pv };
 }
