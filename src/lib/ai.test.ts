@@ -1,6 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { analyze, evaluate } from './ai';
-import { initialBoard, legalMoves, applyMove, isGameOver, opponent, idx } from './reversi';
+import {
+  initialBoard,
+  legalMoves,
+  applyMove,
+  isGameOver,
+  opponent,
+  idx,
+  countEmpty,
+  hasMove,
+} from './reversi';
 import type { Board, Player } from './types';
 
 describe('評価関数', () => {
@@ -32,6 +41,27 @@ describe('探索', () => {
     board[idx(1, 3)] = 'white'; // (1,4)へ打つ別の合法手(隅でない)
     const a = analyze(board, 'black', 2);
     expect(a.move).toEqual(expect.objectContaining({ r: 0, c: 0 }));
+  });
+
+  it('終盤は浅い指定でも最後まで読み切り、確定した評価値を返す', () => {
+    let board = initialBoard();
+    let turn: Player = 'black';
+    let guard = 0;
+    while (countEmpty(board) > 8 && !isGameOver(board) && guard++ < 200) {
+      const moves = legalMoves(board, turn);
+      if (moves.length === 0) {
+        turn = opponent(turn);
+        continue;
+      }
+      const a = analyze(board, turn, 2);
+      board = applyMove(board, a.move!, turn);
+      turn = opponent(turn);
+    }
+    if (!isGameOver(board)) {
+      const side = hasMove(board, turn) ? turn : opponent(turn);
+      const a = analyze(board, side, 1); // 深さ1指定でも終盤は読み切る
+      expect(Math.abs(a.score)).toBeGreaterThanOrEqual(100000 - 64);
+    }
   });
 
   it('自己対戦が合法手だけで進み、必ず終局する', () => {
