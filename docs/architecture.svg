@@ -1,37 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 470" role="img" aria-label="ishigaeshiのアーキテクチャ図">
-  <title>ishigaeshiのアーキテクチャ: 入力からUI、リバーシエンジンとAI、型までの流れ</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 486" role="img" aria-label="ishigaeshiのアーキテクチャ図">
+  <title>ishigaeshiのアーキテクチャ: 入力からUI、リバーシエンジン・AI・棋譜、型までの流れ</title>
   <style>
-    .box { fill: #fdfefd; stroke: #d7ded8; }
-    .zone { fill: #eef1ee; stroke: #dde3de; }
-    .t { font-family: 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif; fill: #182019; }
+    .box { fill: #faf8f2; stroke: #c9bda6; }
+    .zone { fill: #efeadf; stroke: #ddd6c6; }
+    .t { font-family: 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif; fill: #211e18; }
     .h { font-size: 13px; font-weight: 600; }
-    .s { font-size: 11px; fill: #5c6b60; }
-    .zl { font-size: 11px; font-weight: 700; fill: #11865c; letter-spacing: 1px; }
-    .arrow { stroke: #93a89b; stroke-width: 1.6; fill: none; marker-end: url(#head); }
-    .mono { font-family: 'SFMono-Regular', Consolas, monospace; }
+    .s { font-size: 11px; fill: #6f685b; }
+    .zl { font-size: 11px; font-weight: 700; fill: #2f5d44; letter-spacing: 1.5px; }
+    .arrow { stroke: #938b7c; stroke-width: 1.6; fill: none; marker-end: url(#head); }
+    .mono { font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace; }
     @media (prefers-color-scheme: dark) {
-      .box { fill: #15201a; stroke: #263528; }
-      .zone { fill: #101813; stroke: #20302a; }
-      .t { fill: #e3ece5; }
-      .s { fill: #93a89b; }
-      .zl { fill: #4bb98a; }
-      .arrow { stroke: #6f8576; }
+      .box { fill: #181b12; stroke: #383c2b; }
+      .zone { fill: #11140d; stroke: #2a2d20; }
+      .t { fill: #ece9dc; }
+      .s { fill: #9b937f; }
+      .zl { fill: #84b292; }
+      .arrow { stroke: #756d5c; }
+      #head path { fill: #756d5c; }
     }
   </style>
   <defs>
     <marker id="head" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto">
-      <path d="M0 0 L8 4.5 L0 9 Z" fill="#93a89b" />
+      <path d="M0 0 L8 4.5 L0 9 Z" fill="#938b7c" />
     </marker>
   </defs>
 
   <rect class="zone" x="20" y="20" width="780" height="86" rx="13" />
   <text class="t zl" x="36" y="44">入力</text>
-  <rect class="box" x="36" y="54" width="372" height="50" rx="9" />
-  <text class="t h" x="52" y="78">盤クリック</text>
-  <text class="t s" x="52" y="94">合法手のマスに石を置く</text>
-  <rect class="box" x="428" y="54" width="356" height="50" rx="9" />
-  <text class="t h" x="444" y="78">設定</text>
-  <text class="t s" x="444" y="94">自分の石・AIの強さ・読み筋表示</text>
+  <rect class="box" x="36" y="54" width="240" height="50" rx="9" />
+  <text class="t h" x="52" y="78">着手</text>
+  <text class="t s" x="52" y="94">クリック・矢印キー+Enter</text>
+  <rect class="box" x="288" y="54" width="240" height="50" rx="9" />
+  <text class="t h" x="304" y="78">設定</text>
+  <text class="t s" x="304" y="94">石・強さ・読み筋表示(保存)</text>
+  <rect class="box" x="540" y="54" width="244" height="50" rx="9" />
+  <text class="t h" x="556" y="78">共有URL</text>
+  <text class="t s" x="556" y="94">棋譜を載せたリンクで復元</text>
 
   <path class="arrow" d="M410 106 V132" />
 
@@ -39,34 +43,40 @@
   <text class="t zl mono" x="36" y="158">UI (src/main.ts)</text>
   <rect class="box" x="36" y="168" width="240" height="74" rx="9" />
   <text class="t h" x="52" y="192">盤の描画</text>
-  <text class="t s" x="52" y="210">石・ヒント・直前手を</text>
-  <text class="t s" x="52" y="226">SVGで描く</text>
+  <text class="t s" x="52" y="210">石・ヒント・直前手・</text>
+  <text class="t s" x="52" y="226">キーボードカーソルをSVGで</text>
   <rect class="box" x="288" y="168" width="240" height="74" rx="9" />
-  <text class="t h" x="304" y="192">進行管理</text>
-  <text class="t s" x="304" y="210">人間とAIの手番、</text>
-  <text class="t s" x="304" y="226">パスと終局の処理</text>
+  <text class="t h" x="304" y="192">進行と検討</text>
+  <text class="t s" x="304" y="210">手番・パス・終局、</text>
+  <text class="t s" x="304" y="226">待った/進む・棋譜ジャンプ</text>
   <rect class="box" x="540" y="168" width="244" height="74" rx="9" />
-  <text class="t h" x="556" y="192">読み筋の可視化</text>
-  <text class="t s" x="556" y="210">評価値とAIの予想手順を</text>
-  <text class="t s" x="556" y="226">盤と一覧に表示</text>
+  <text class="t h" x="556" y="192">評価の可視化</text>
+  <text class="t s" x="556" y="210">評価値・読み筋・</text>
+  <text class="t s" x="556" y="226">形勢グラフ・棋譜一覧</text>
 
   <path class="arrow" d="M300 252 V286" />
   <text class="t s" x="308" y="273">局面を渡す</text>
   <path class="arrow" d="M520 286 V252" />
-  <text class="t s" x="512" y="273" text-anchor="end">最善手・評価・読み筋</text>
+  <text class="t s" x="512" y="273" text-anchor="end">最善手・評価・読み筋・棋譜</text>
 
-  <rect class="zone" x="20" y="288" width="780" height="96" rx="13" />
-  <text class="t zl" x="36" y="312">リバーシエンジン</text>
-  <rect class="box" x="36" y="322" width="360" height="52" rx="9" />
+  <rect class="zone" x="20" y="288" width="780" height="112" rx="13" />
+  <text class="t zl" x="36" y="312">リバーシエンジン (src/lib)</text>
+  <rect class="box" x="36" y="322" width="240" height="62" rx="9" />
   <text class="t h mono" x="52" y="344">reversi.ts</text>
-  <text class="t s" x="52" y="362">合法手・裏返し・パス・終局・石数</text>
-  <rect class="box" x="412" y="322" width="372" height="52" rx="9" />
-  <text class="t h mono" x="428" y="344">ai.ts</text>
-  <text class="t s" x="428" y="362">αβ探索・評価関数・読み筋(PV)</text>
+  <text class="t s" x="52" y="362">合法手・裏返し・パス・</text>
+  <text class="t s" x="52" y="377">終局・石数</text>
+  <rect class="box" x="288" y="322" width="240" height="62" rx="9" />
+  <text class="t h mono" x="304" y="344">ai.ts</text>
+  <text class="t s" x="304" y="362">αβ探索・評価関数・</text>
+  <text class="t s" x="304" y="377">読み筋(PV)</text>
+  <rect class="box" x="540" y="322" width="244" height="62" rx="9" />
+  <text class="t h mono" x="556" y="344">record.ts</text>
+  <text class="t s" x="556" y="362">棋譜の符号化・復号・</text>
+  <text class="t s" x="556" y="377">再生(共有と検討)</text>
 
-  <path class="arrow" d="M410 384 V410" />
+  <path class="arrow" d="M410 400 V426" />
 
-  <rect class="zone" x="20" y="412" width="780" height="44" rx="11" />
-  <text class="t zl mono" x="36" y="439">types.ts</text>
-  <text class="t s" x="120" y="439">盤・手・解析結果の型。乱数を使わず、同じ局面からは常に同じ手を選ぶ</text>
+  <rect class="zone" x="20" y="428" width="780" height="44" rx="11" />
+  <text class="t zl mono" x="36" y="455">types.ts</text>
+  <text class="t s" x="120" y="455">盤・手・解析結果の型。乱数を使わず、同じ局面からは常に同じ手を選ぶ</text>
 </svg>
