@@ -68,4 +68,14 @@ describe('UI のDOM結線', () => {
     cb.dispatchEvent(new Event('change'));
     expect(document.querySelectorAll('#board .pv-ghost').length).toBe(0);
   });
+
+  it('観戦モードに切り替えるとヒントが無効になる', () => {
+    const w = document.getElementById('watch') as HTMLInputElement;
+    expect(w).toBeTruthy();
+    w.checked = true;
+    w.dispatchEvent(new Event('change'));
+    expect((document.getElementById('hint') as HTMLButtonElement).disabled).toBe(true);
+    w.checked = false;
+    w.dispatchEvent(new Event('change'));
+  });
 });
