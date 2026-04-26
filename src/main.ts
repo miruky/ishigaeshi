@@ -150,6 +150,9 @@ function shell(): string {
         <div class="field">
           <label class="toggle" for="show-read"><input type="checkbox" id="show-read" /> 読み筋を盤に表示</label>
         </div>
+        <div class="field">
+          <label class="toggle" for="watch"><input type="checkbox" id="watch" /> AI同士の対戦を観る</label>
+        </div>
         <div class="btn-row">
           <button id="undo" class="btn" type="button">待った</button>
           <button id="redo" class="btn" type="button">進む</button>
@@ -201,6 +204,7 @@ class Game {
   private human: Player = 'black';
   private depth = 4;
   private showRead = true;
+  private watch = false;
   private over = false;
   private thinking = false;
   private lastMove: Move | null = null;
@@ -220,6 +224,8 @@ class Game {
   private kb: { r: number; c: number } | null = null;
   private bestFlash: Move | null = null;
   private toastTimer = 0;
+  private numShown: Record<string, number> = { 'n-black': 2, 'n-white': 2 };
+  private numRaf: Record<string, number> = {};
 
   private boardEl = el<HTMLElement>('board') as unknown as SVGSVGElement;
   private bg = svg('g');
@@ -264,6 +270,15 @@ class Game {
   // --- 盤の静的部分 ----------------------------------------------------------
 
   private buildStatic(): void {
+    const grad = (id: string, r: string, c0: string, c1: string): SVGRadialGradientElement => {
+      const g = svg('radialGradient', { id, cx: '36%', cy: '32%', r });
+      g.append(svg('stop', { offset: '0%', class: c0 }), svg('stop', { offset: '100%', class: c1 }));
+      return g;
+    };
+    const defs = svg('defs');
+    defs.append(grad('grad-black', '72%', 'g-b0', 'g-b1'), grad('grad-white', '74%', 'g-w0', 'g-w1'));
+    this.bg.appendChild(defs);
+
     this.bg.appendChild(
       svg('rect', { class: 'felt', x: PAD, y: PAD, width: SIZE * CELL, height: SIZE * CELL, rx: 3 }),
     );
@@ -366,18 +381,25 @@ class Game {
       window.setTimeout(() => this.step(), reduceMotion ? 0 : 480);
       return;
     }
-    if (this.turn === this.human) {
+    if (!this.watch && this.turn === this.human) {
       if (this.showRead) this.computeAnalysis(this.human);
       this.render();
       return;
     }
     this.thinking = true;
-    this.setStatus(`${PLAYER_JA[this.turn]}(AI)が読んでいます`);
+    const who = this.watch ? `${PLAYER_JA[this.turn]}` : `${PLAYER_JA[this.turn]}(AI)`;
+    this.setStatus(`${who}が読んでいます`);
     this.render();
     window.setTimeout(
       () => {
         if (this.reviewIndex !== null) {
           this.thinking = false;
+          return;
+        }
+        // 思考中に観戦モードを切ったなら、その手は指さず人間に戻す。
+        if (!this.watch && this.turn === this.human) {
+          this.thinking = false;
+          this.render();
           return;
         }
         const a = analyze(this.board, this.turn, this.depth);
@@ -410,7 +432,8 @@ class Game {
   }
 
   private onHumanMove(move: Move): void {
-    if (this.thinking || this.over || this.turn !== this.human || this.reviewIndex !== null) return;
+    if (this.watch || this.thinking || this.over || this.turn !== this.human || this.reviewIndex !== null)
+      return;
     this.commit(move, this.human);
     this.analysis = null;
     this.kb = { r: move.r, c: move.c };
@@ -489,6 +512,11 @@ class Game {
     if (index < 0 || index >= this.positions.length) return;
     this.reviewIndex = index === this.positions.length - 1 ? null : index;
     this.render();
+    try {
+      this.boardEl.focus();
+    } catch {
+      /* フォーカスできなくても表示は更新済み */
+    }
   }
 
   private toLive(): void {
@@ -526,15 +554,6 @@ class Game {
           else if (this.changed.has(idx(r, c))) cls += ' flip';
         }
         this.discLayer.appendChild(svg('circle', { class: cls, cx: x, cy: y, r: rad }));
-        this.discLayer.appendChild(
-          svg('circle', {
-            class: 'disc-hi',
-            cx: x - rad * 0.32,
-            cy: y - rad * 0.34,
-            r: rad * 0.42,
-            fill: cell === 'black' ? 'var(--disc-black-hi)' : 'var(--disc-white-hi)',
-          }),
-        );
       }
     }
   }
@@ -557,7 +576,7 @@ class Game {
       );
     }
 
-    if (live && !this.over && !this.thinking && this.turn === this.human) {
+    if (live && !this.watch && !this.over && !this.thinking && this.turn === this.human) {
       for (const m of legalMoves(this.board, this.human)) {
         const { x, y } = cellCenter(m.r, m.c);
         const dot = svg('circle', { class: 'hint', cx: x, cy: y, r: CELL * 0.15 });
@@ -580,7 +599,7 @@ class Game {
       );
     }
 
-    if (this.kb && live && !this.over && this.turn === this.human) {
+    if (this.kb && live && !this.watch && !this.over && this.turn === this.human) {
       const { x, y } = cellCenter(this.kb.r, this.kb.c);
       this.overlay.appendChild(
         svg('rect', {
@@ -608,8 +627,8 @@ class Game {
   private renderSide(): void {
     const board = this.displayBoard();
     const s = score(board);
-    el('n-black').textContent = String(s.black);
-    el('n-white').textContent = String(s.white);
+    this.setNum('n-black', s.black);
+    this.setNum('n-white', s.white);
     const total = Math.max(1, s.black + s.white);
     el('bar-b').style.width = `${(s.black / total) * 100}%`;
     el('bar-w').style.width = `${(s.white / total) * 100}%`;
@@ -628,14 +647,21 @@ class Game {
       status.textContent = w === 'draw' ? '引き分け' : `${PLAYER_JA[w]}の勝ち`;
     } else if (!this.thinking) {
       status.className = 'status';
-      status.textContent =
-        this.turn === this.human ? 'あなたの番です' : `${PLAYER_JA[this.turn]}(AI)の番`;
+      status.textContent = this.watch
+        ? `AI同士が対戦中 ・ ${PLAYER_JA[this.turn]}の番`
+        : this.turn === this.human
+          ? 'あなたの番です'
+          : `${PLAYER_JA[this.turn]}(AI)の番`;
     }
 
     el<HTMLButtonElement>('undo').disabled = this.record.length === 0 || this.thinking;
     el<HTMLButtonElement>('redo').disabled = this.redo.length === 0 || this.thinking;
     el<HTMLButtonElement>('hint').disabled =
-      this.over || this.thinking || this.turn !== this.human || this.reviewIndex !== null;
+      this.watch ||
+      this.over ||
+      this.thinking ||
+      this.turn !== this.human ||
+      this.reviewIndex !== null;
     el('review-tag').classList.toggle('on', this.reviewIndex !== null);
 
     this.renderAnalysis();
@@ -680,6 +706,11 @@ class Game {
     const n = this.evalLog.length;
 
     g.appendChild(svg('line', { class: 'eg-zero', x1: 0, y1: zeroY, x2: W, y2: zeroY }));
+    const top = svg('text', { class: 'eg-axis', x: 3, y: 9 });
+    top.textContent = '黒';
+    const bot = svg('text', { class: 'eg-axis', x: 3, y: H - 3 });
+    bot.textContent = '白';
+    g.append(top, bot);
 
     if (n <= 1) {
       const t = svg('text', { class: 'eg-empty', x: W / 2, y: zeroY + 4 });
@@ -747,6 +778,27 @@ class Game {
     status.textContent = text;
   }
 
+  /** 石数をなめらかに数え上げて更新する(reduced-motionや検討中は即時)。 */
+  private setNum(id: string, to: number): void {
+    const node = el(id);
+    const from = this.numShown[id] ?? to;
+    this.numShown[id] = to;
+    if (reduceMotion || this.reviewIndex !== null || from === to) {
+      node.textContent = String(to);
+      return;
+    }
+    if (this.numRaf[id]) cancelAnimationFrame(this.numRaf[id]);
+    const start = performance.now();
+    const dur = 320;
+    const tick = (now: number): void => {
+      const t = Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - t, 3);
+      node.textContent = String(Math.round(from + (to - from) * eased));
+      if (t < 1) this.numRaf[id] = requestAnimationFrame(tick);
+    };
+    this.numRaf[id] = requestAnimationFrame(tick);
+  }
+
   private toast(text: string): void {
     const t = el('toast');
     t.textContent = text;
@@ -806,6 +858,19 @@ class Game {
   }
 
   private onBoardKey(e: KeyboardEvent): void {
+    // 検討中は矢印キーで棋譜を1手ずつ行き来する。
+    if (this.reviewIndex !== null) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        this.review(this.reviewIndex - 1);
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        this.review(this.reviewIndex + 1);
+        return;
+      }
+    }
     const move = (dr: number, dc: number): void => {
       e.preventDefault();
       const cur = this.kb ?? { r: 3, c: 3 };
@@ -841,7 +906,8 @@ class Game {
 
   private bind(): void {
     this.boardEl.addEventListener('click', (e) => {
-      if (this.thinking || this.over || this.turn !== this.human || this.reviewIndex !== null) return;
+      if (this.watch || this.thinking || this.over || this.turn !== this.human || this.reviewIndex !== null)
+        return;
       const cell = this.cellFromEvent(e);
       if (!cell) return;
       const move = legalMoves(this.board, this.human).find((m) => m.r === cell.r && m.c === cell.c);
@@ -865,6 +931,13 @@ class Game {
         this.computeAnalysis(this.human);
       }
       this.render();
+    });
+    el<HTMLInputElement>('watch').addEventListener('change', (e) => {
+      this.watch = (e.target as HTMLInputElement).checked;
+      this.reviewIndex = null;
+      this.analysis = null;
+      this.render();
+      this.step();
     });
     el<HTMLButtonElement>('undo').addEventListener('click', () => this.undo());
     el<HTMLButtonElement>('redo').addEventListener('click', () => this.redoMoves());
