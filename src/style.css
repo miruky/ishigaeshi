@@ -19,10 +19,10 @@
   --felt: #5f7d65;
   --felt-line: #4f6c54;
   --felt-dot: #41583f;
-  --disc-black: #211d17;
-  --disc-black-hi: rgba(255, 255, 255, 0.16);
-  --disc-white: #f4efe2;
-  --disc-white-hi: rgba(255, 255, 255, 0.9);
+  --disc-black: #1a1711;
+  --disc-black-top: #423b30;
+  --disc-white: #ece4d2;
+  --disc-white-top: #fffefb;
   --disc-edge: rgba(0, 0, 0, 0.28);
   --coord: rgba(247, 245, 238, 0.72);
   --hint: rgba(247, 245, 238, 0.5);
@@ -54,10 +54,10 @@
   --felt: #243a2a;
   --felt-line: #2f4a33;
   --felt-dot: #3c5b40;
-  --disc-black: #100f0b;
-  --disc-black-hi: rgba(255, 255, 255, 0.12);
-  --disc-white: #ece6d6;
-  --disc-white-hi: rgba(255, 255, 255, 0.82);
+  --disc-black: #0d0c08;
+  --disc-black-top: #2c2a22;
+  --disc-white: #e3dcca;
+  --disc-white-top: #fbf7ec;
   --disc-edge: rgba(0, 0, 0, 0.5);
   --coord: rgba(236, 233, 220, 0.62);
   --hint: rgba(236, 233, 220, 0.4);
@@ -83,10 +83,10 @@
     --felt: #243a2a;
     --felt-line: #2f4a33;
     --felt-dot: #3c5b40;
-    --disc-black: #100f0b;
-    --disc-black-hi: rgba(255, 255, 255, 0.12);
-    --disc-white: #ece6d6;
-    --disc-white-hi: rgba(255, 255, 255, 0.82);
+    --disc-black: #0d0c08;
+    --disc-black-top: #2c2a22;
+    --disc-white: #e3dcca;
+    --disc-white-top: #fbf7ec;
     --disc-edge: rgba(0, 0, 0, 0.5);
     --coord: rgba(236, 233, 220, 0.62);
     --hint: rgba(236, 233, 220, 0.4);
@@ -320,10 +320,10 @@ select:hover {
   transform-origin: center;
 }
 .disc.black {
-  fill: var(--disc-black);
+  fill: url(#grad-black);
 }
 .disc.white {
-  fill: var(--disc-white);
+  fill: url(#grad-white);
 }
 .disc.flip {
   animation: flip 0.34s var(--ease) both;
@@ -331,8 +331,18 @@ select:hover {
 .disc.place {
   animation: place 0.26s var(--ease) both;
 }
-.disc-hi {
-  pointer-events: none;
+/* 石は放射グラデーションで上方からの光を表す */
+.g-b0 {
+  stop-color: var(--disc-black-top);
+}
+.g-b1 {
+  stop-color: var(--disc-black);
+}
+.g-w0 {
+  stop-color: var(--disc-white-top);
+}
+.g-w1 {
+  stop-color: var(--disc-white);
 }
 
 .hint {
@@ -517,6 +527,11 @@ select:hover {
   font-size: 11px;
   font-family: var(--sans);
   text-anchor: middle;
+}
+.eg-axis {
+  fill: var(--faint);
+  font-size: 8px;
+  font-family: var(--sans);
 }
 
 /* --- 評価パネル --------------------------------------------------------- */
